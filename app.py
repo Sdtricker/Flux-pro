@@ -8,7 +8,7 @@ BASE_URL = "https://fast-flux-demo.replicate.workers.dev/api/generate-image"
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({
-        "message": "API active",
+        "message": "API active made by @NGYT777GG",
         "usage": "/generate?q=your_text"
     })
 
