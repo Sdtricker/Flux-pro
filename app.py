@@ -1,5 +1,5 @@
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, Response, jsonify
 
 app = Flask(__name__)
 
@@ -8,7 +8,7 @@ BASE_URL = "https://fast-flux-demo.replicate.workers.dev/api/generate-image"
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({
-        "message": "ApI RuNnInG SuCeSsFuLlY! MaDe By @NgYT777Gg",
+        "message": "API active",
         "usage": "/generate?q=your_text"
     })
 
@@ -20,14 +20,26 @@ def generate():
         return jsonify({"error": "Missing parameter: q"}), 400
 
     try:
-        req_url = f"{BASE_URL}?text={text}"
-        r = requests.get(req_url)
+        # Make request to replicate worker
+        url = f"{BASE_URL}?text={text}"
+        r = requests.get(url)
 
-        return jsonify({
-            "status": "success",
-            "input_text": text,
-            "api_response": r.json()
-        })
+        # If it's NOT an image
+        if "image" not in r.headers.get("Content-Type", ""):
+            return jsonify({
+                "error": "API did not return an image",
+                "content_type": r.headers.get("Content-Type"),
+                "raw": r.text
+            }), 400
+
+        # DIRECT DOWNLOAD RESPONSE
+        return Response(
+            r.content,
+            mimetype="image/png",
+            headers={
+                "Content-Disposition": "attachment; filename=generated.png"
+            }
+        )
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
